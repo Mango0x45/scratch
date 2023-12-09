@@ -5,11 +5,11 @@
 #include <stdint.h>\
 #include <stdio.h>\
 #include <stdlib.h>\
-int \
+int\
 main(void)\
 {\
 	uint8_t *p = calloc(16384, 1);\
-	if (!p) \
+	if (!p)\
 		err(EXIT_FAILURE, "calloc");
 
 /./!d
