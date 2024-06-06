@@ -1,8 +1,12 @@
 #define _GNU_SOURCE
+#include <sys/wait.h>
+
 #include <assert.h>
 #include <err.h>
-#include <paths.h>
+#include <errno.h>
 #include <fcntl.h>
+#include <paths.h>
+#include <stdio.h>
 #include <unistd.h>
 
 int
@@ -22,5 +26,20 @@ main(void)
 	assert((fcntl(nfd, F_GETFD) & FD_CLOEXEC) != 0);
 
 	close(nfd);
-	close(fd);
+
+	switch (fork()) {
+	case -1:
+		err(1, "fork");
+	case 0:
+		puts("If the FD for /dev/null is closed, this should list 4 items");
+		fflush(stdout);
+		execlp("ls", "ls", "/proc/self/fd", NULL);
+		err(1, "exec: true");
+	default:
+		if (wait(NULL) == -1)
+			err(1, "wait");
+	}
+
+	/* Not EBADF */
+	assert(close(fd) == 0);
 }
