@@ -71,14 +71,14 @@ sha1end(sha1_t *s, uint8_t dgst[SHA1DGSTSZ])
 		((uint32_t *)dgst)[i] = htobe32(s->dgst[i]);
 }
 
-#define R(mi, mj, mk, ml, ei, ej, f) \
-	do { \
-		ei = _mm_sha1nexte_epu32(ei, mi); \
-		ej = abcd; \
-		mj = _mm_sha1msg2_epu32(mj, mi); \
-		abcd = _mm_sha1rnds4_epu32(abcd, ei, f); \
-		ml = _mm_sha1msg1_epu32(ml, mi); \
-		mk = _mm_xor_si128(mk, mi); \
+#define R(mi, mj, mk, ml, ei, ej, f)                                           \
+	do {                                                                       \
+		ei = _mm_sha1nexte_epu32(ei, mi);                                      \
+		ej = abcd;                                                             \
+		mj = _mm_sha1msg2_epu32(mj, mi);                                       \
+		abcd = _mm_sha1rnds4_epu32(abcd, ei, f);                               \
+		ml = _mm_sha1msg1_epu32(ml, mi);                                       \
+		mk = _mm_xor_si128(mk, mi);                                            \
 	} while (0)
 
 static void
