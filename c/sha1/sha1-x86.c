@@ -84,14 +84,14 @@ sha1end(sha1_t *s, uint8_t dgst[SHA1DGSTSZ])
 static void
 sha1hashblk(sha1_t *s, const uint8_t *blk)
 {
-    __m128i abcd, e0, e1;
+	__m128i abcd, e0, e1;
 	__m128i abcd_save, e_save;
-    __m128i msg0, msg1, msg2, msg3;
+	__m128i msg0, msg1, msg2, msg3;
 
 	/* Masks for swapping endianness.  We make BSWAPDMSK a macro to
 	   please the compiler (it wants immediate values). */
 #define bswapdmsk 0x1B  /* 0b00'01'10'11 */
-    const __m128i bswapbmsk = _mm_set_epi64x(
+	const __m128i bswapbmsk = _mm_set_epi64x(
 		0x0001020304050607ULL,
 		0x08090a0b0c0d0e0fULL
 	);
@@ -99,7 +99,7 @@ sha1hashblk(sha1_t *s, const uint8_t *blk)
 	const __m128i *blkx = (const __m128i *)blk;
 
 	abcd = _mm_shuffle_epi32(_mm_loadu_si128((__m128i *)s->dgst), bswapdmsk);
-    e0 = _mm_set_epi32(s->dgst[4], 0, 0, 0);
+	e0 = _mm_set_epi32(s->dgst[4], 0, 0, 0);
 
 	abcd_save = abcd;
 	e_save = e0;
@@ -163,7 +163,7 @@ sha1hashblk(sha1_t *s, const uint8_t *blk)
 	abcd = _mm_add_epi32(abcd, abcd_save);
 
 	_mm_storeu_si128((__m128i *)s->dgst, _mm_shuffle_epi32(abcd, bswapdmsk));
-    s->dgst[4] = _mm_extract_epi32(e0, 3);
+	s->dgst[4] = _mm_extract_epi32(e0, 3);
 #undef bswapdmsk
 }
 
