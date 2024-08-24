@@ -1,0 +1,18 @@
+This is an experiment in using AVX-512 instructions to efficiently lookup
+Unicode properties for runes.  It turns out after benchmarking that this
+is actually slower than a generic non-SIMD approach.  My hypothesis is
+that it’s slower due to the large latency of AVX-512 gather instructions
+which are required to index the Unicode lookup tables.
+
+UPDATE 1:  After replacing the gather instructions with loads/stores and manual
+for-loops to index data, the performance of the AVX-512 approach actually beats
+the generic approach by a small margin (just under 10% or so).
+
+UPDATE 2:  Due to the fact that the Unicode tables take up a very large
+amount of space, it’s ideal that you use the smallest datatypes possible.
+After changing both the stage₁ and stage₂ tables to be arrays of bytes as
+opposed to arrays of dwords, the AVX-512 implementation using gather
+instructions no longer works however the variation using manual loops
+with loads/stores does work, albeit slower.  On a 27 MiB file the generic
+implementation takes on average 82ms while the AVX-512 implementation
+takes on average 77ms.
