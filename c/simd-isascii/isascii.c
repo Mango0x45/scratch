@@ -16,21 +16,10 @@
 
 static const unsigned char *readfile(const char *, size_t *);
 
-static const uint8_t charmsk[64] = {
-	0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
-	0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
-	0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
-	0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
-	0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
-	0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
-	0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
-	0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
-};
-
 bool
 strisascii(const unsigned char *s, size_t n)
 {
-	__m512i msk = _mm512_loadu_epi8(charmsk);
+	__m512i msk = _mm512_set1_epi8((char)(1 << 7));
 	while (n >= VECWDTH) {
 		if (_mm512_test_epi8_mask(_mm512_loadu_epi8(s), msk) != 0)
 			return false;
@@ -69,12 +58,12 @@ main(int argc, char **argv)
 	clock_t tmbeg = clock();
 	if (!strisascii(beg, len))
 		puts("Non-ASCII");
-	printf("Elapsed time: %.3fs\n", (double)(clock() - tmbeg) / CLOCKS_PER_SEC);
+	printf("Elapsed time (AVX-512): %.3fs\n", (double)(clock() - tmbeg) / CLOCKS_PER_SEC);
 
 	tmbeg = clock();
 	if (!strisascii_dumb((const unsigned char *)beg, len))
 		puts("Non-ASCII");
-	printf("Elapsed time: %.3fs\n", (double)(clock() - tmbeg) / CLOCKS_PER_SEC);
+	printf("Elapsed time (Generic): %.3fs\n", (double)(clock() - tmbeg) / CLOCKS_PER_SEC);
 
 	munmap((void *)beg, len);
 	return rv;
