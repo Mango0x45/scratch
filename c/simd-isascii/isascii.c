@@ -36,9 +36,7 @@ strisascii_avx2(const unsigned char *s, size_t n)
 {
 	__m256i msk = _mm256_set1_epi8((char)(1 << 7));
 	while (n >= sizeof(__m256i)) {
-		__m256i v =
-			_mm256_and_si256(_mm256_loadu_si256((const __m256i *)s), msk);
-		if (_mm256_movemask_epi8(v) != 0)
+		if (_mm256_testz_si256(_mm256_loadu_si256((__m256i *)s), msk) == 0)
 			return false;
 		s += sizeof(__m256i);
 		n -= sizeof(__m256i);
