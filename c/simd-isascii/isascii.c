@@ -12,19 +12,36 @@
 
 #include <bsd/stdlib.h>
 
-#define VECWDTH (512 / 8)
-
 static const unsigned char *readfile(const char *, size_t *);
 
 bool
-strisascii(const unsigned char *s, size_t n)
+strisascii_avx512(const unsigned char *s, size_t n)
 {
 	__m512i msk = _mm512_set1_epi8((char)(1 << 7));
-	while (n >= VECWDTH) {
+	while (n >= sizeof(__m512i)) {
 		if (_mm512_test_epi8_mask(_mm512_loadu_epi8(s), msk) != 0)
 			return false;
-		s += VECWDTH;
-		n -= VECWDTH;
+		s += sizeof(__m512i);
+		n -= sizeof(__m512i);
+	}
+	for (size_t i = 0; i < n; i++) {
+		if (s[i] > 0x7F)
+			return false;
+	}
+	return true;
+}
+
+bool
+strisascii_avx2(const unsigned char *s, size_t n)
+{
+	__m256i msk = _mm256_set1_epi8((char)(1 << 7));
+	while (n >= sizeof(__m256i)) {
+		__m256i v =
+			_mm256_and_si256(_mm256_loadu_si256((const __m256i *)s), msk);
+		if (_mm256_movemask_epi8(v) != 0)
+			return false;
+		s += sizeof(__m256i);
+		n -= sizeof(__m256i);
 	}
 	for (size_t i = 0; i < n; i++) {
 		if (s[i] > 0x7F)
@@ -56,9 +73,14 @@ main(int argc, char **argv)
 	const unsigned char *beg = readfile(argv[1], &len);
 
 	clock_t tmbeg = clock();
-	if (!strisascii(beg, len))
+	if (!strisascii_avx512(beg, len))
 		puts("Non-ASCII");
 	printf("Elapsed time (AVX-512): %.3fs\n", (double)(clock() - tmbeg) / CLOCKS_PER_SEC);
+
+	tmbeg = clock();
+	if (!strisascii_avx2((const unsigned char *)beg, len))
+		puts("Non-ASCII");
+	printf("Elapsed time (AVX-2):   %.3fs\n", (double)(clock() - tmbeg) / CLOCKS_PER_SEC);
 
 	tmbeg = clock();
 	if (!strisascii_dumb((const unsigned char *)beg, len))

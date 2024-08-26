@@ -1,0 +1,8 @@
+You can generate test data via the following command, and then just
+use ‘echo foo >>out’ to write some non-ASCII into the stream.
+
+	$ tr -cd ' -~' </dev/urandom | head -c BYTES >out
+
+Findings:
+1.  GCC Doesn’t auto-vectorize the generic loop
+2.  The AVX-2 version out-performs AVX-512 by a huge margin
